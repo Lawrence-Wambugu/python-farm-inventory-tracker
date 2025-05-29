@@ -1,4 +1,4 @@
-from helpers import add_item, view_inventory, update_item, delete_item, get_categories
+from helpers import add_item, view_inventory, update_item, delete_item, get_categories, filter_by_category, generate_summary_report
 
 def main():
     while True:
@@ -7,8 +7,10 @@ def main():
         print("2. View Inventory")
         print("3. Update Item")
         print("4. Delete Item")
-        print("5. Exit")
-        choice = input("Enter choice (1-5): ")
+        print("5. Filter by Category")
+        print("6. Generate Summary Report")
+        print("7. Exit")
+        choice = input("Enter choice (1-7): ")
 
         if choice == "1":
             name = input("Enter item name (e.g., Maize, Cow, Tractor): ")
@@ -57,11 +59,22 @@ def main():
                 continue
 
         elif choice == "5":
+            categories = get_categories()
+            print("Available categories:")
+            for cat_id, cat_name in categories:
+                print(f"{cat_id}. {cat_name}")
+            category_name = input("Enter category name to filter: ")
+            filter_by_category(category_name)
+
+        elif choice == "6":
+            generate_summary_report()
+
+        elif choice == "7":
             print("Exiting program.")
             break
 
         else:
-            print("Invalid choice. Please enter 1-5.")
+            print("Invalid choice. Please enter 1-7.")
 
 if __name__ == "__main__":
     main()

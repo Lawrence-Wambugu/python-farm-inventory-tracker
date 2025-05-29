@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from db.models import Category, Item, Transaction
 from datetime import datetime
@@ -123,5 +123,47 @@ def get_categories():
     try:
         categories = session.query(Category).all()
         return [(cat.id, cat.name) for cat in categories]
+    finally:
+        session.close()
+
+def filter_by_category(category_name):
+    session = get_session()
+    try:
+        category = session.query(Category).filter_by(name=category_name).first()
+        if not category:
+            print(f"Category '{category_name}' not found.")
+            return
+        items = session.query(Item, Category).join(Category).filter(Category.id == category.id).all()
+        if not items:
+            print(f"No items found in category '{category_name}'.")
+            return
+        print(f"\nItems in {category_name}:")
+        print("ID | Name | Quantity | Category")
+        print("-" * 40)
+        for item, category in items:
+            print(f"{item.id} | {item.name} | {item.quantity} | {category.name}")
+    except Exception as e:
+        print(f"Error filtering by category: {e}")
+    finally:
+        session.close()
+
+def generate_summary_report():
+    session = get_session()
+    try:
+        # Aggregate total quantity per category
+        results = session.query(Category.name, func.sum(Item.quantity).label('total_quantity'))\
+                        .join(Item, Category.id == Item.category_id)\
+                        .group_by(Category.id).all()
+        if not results:
+            print("No items in inventory for summary.")
+            return
+        print("\nInventory Summary Report:")
+        print("Category | Total Quantity")
+        print("-" * 30)
+        summary = {name: total for name, total in results}  # Use dict for report
+        for name, total in summary.items():
+            print(f"{name} | {total}")
+    except Exception as e:
+        print(f"Error generating summary report: {e}")
     finally:
         session.close()
