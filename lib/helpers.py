@@ -98,7 +98,9 @@ def delete_item(item_id):
         if not item:
             print(f"Item with ID {item_id} not found.")
             return
-        # Log transaction
+        # Delete related transactions first
+        session.query(Transaction).filter_by(item_id=item_id).delete()
+        # Log transaction for deletion
         transaction = Transaction(
             item_id=item.id,
             quantity=-item.quantity,
@@ -106,6 +108,7 @@ def delete_item(item_id):
             timestamp=datetime.utcnow()
         )
         session.add(transaction)
+        # Delete the item
         session.delete(item)
         session.commit()
         print(f"Item ID {item_id} deleted.")
